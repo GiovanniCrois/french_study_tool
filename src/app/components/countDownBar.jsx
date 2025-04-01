@@ -6,23 +6,23 @@ export default function CountDownBar() {
 
   useEffect(() => {
     if (width === 0) {
-      return; // Detener al llegar a cero
+      return;
     }
     const interval = setInterval(() => {
       setWidth((prevWidth) => {
         if (prevWidth <= 0) {
-          clearInterval(interval); // Detener el intervalo cuando llegue a 0
+          clearInterval(interval);
           return 0;
         }
-        return prevWidth - 1; // Disminuir el width en 1% por cada intervalo
+        return prevWidth - 1;
       });
     }, 100);
     return () => clearInterval(interval);
   }, [width]);
   return (
     <>
-      <div className="w-full bg-withe h-24 border-solid border-2 border-[#E63946] rounded-full overflow-hidden">
-        <div style={{ width: width + "%" }} className="bg-[#E63946] h-24"></div>
+      <div className="w-full bg-withe h-12 border-solid border-2 border-[#E63946] rounded-full overflow-hidden">
+        <div style={{ width: width + "%" }} className="bg-[#E63946] h-12"></div>
       </div>
     </>
   );
