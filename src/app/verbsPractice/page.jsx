@@ -5,8 +5,7 @@ export default function verbsPractice() {
     <>
       <div className="mt-12 w-3/4 flex place-self-center">
         <div className="w-full grid grid-cols-1 content-center gap-8">
-          <CountDownBar />
-          <QuestionPanel />
+          <QuestionPanel totalQuestions={10} />
         </div>
       </div>
     </>
