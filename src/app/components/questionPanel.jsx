@@ -1,104 +1,163 @@
 "use client";
-
-import { useState } from "react";
-export default function QuestionPanel() {
-  const question = {
-    question: "Etre",
-    options: ["Suis", "As", "Est", "Sommes"],
-  };
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+import ResultPanel from "./resultsPanel";
+import { verbs } from "../../../public/data/verbos";
+import { useEffect, useState } from "react";
+export default function QuestionPanel({
+  totalQuestions,
+  setAttempts,
+  attempts,
+}) {
+  const [verbos, setVerbos] = useState(verbs);
+  const [questions, setQuestions] = useState();
+  const [loading, setLoading] = useState(true);
+  const [isRunning, setIsRunning] = useState(true);
+  const [isFinished, setIsFinished] = useState(false);
+  useEffect(() => {
+    loadQuestions();
+    setLoading(false);
+    setWidth(100);
+  }, []);
   const persons = {
-    fistPersonSingular: "Je",
-    secondPersonSingular: "Tu",
-    thirdPersonSingular: "Il / Elle",
-    firstPersonPlural: "Nous",
-    secondPersonPlural: "Vous",
-    thirdPErsonPlural: "Ils / Elles",
+    pps: "Je",
+    sps: "Tu",
+    tps: "Il / Elle",
+    ppp: "Nous",
+    spp: "Vous",
+    tpp: "Ils / Elles",
   };
-  const [verbs, setVerbs] = useState({
-    Etre: {
-      fistPersonSingular: "Suis",
-      secondPersonSingular: "Es",
-      thirdPersonSingular: "Est",
-      firstPersonPlural: "Sommes",
-      secondPersonPlural: "Etes",
-      thirdPErsonPlural: "Sont",
-    },
-    Avoir: {
-      fistPersonSingular: "J'ai",
-      secondPersonSingular: "As",
-      thirdPersonSingular: "A",
-      firstPersonPlural: "Avons",
-      secondPersonPlural: "Aves",
-      thirdPErsonPlural: "Ont",
-    },
-  });
-  const [questions, setQuestions] = useState([
-    {
-      persone: "fistPersonSingular",
-      verb: "Etre",
-    },
-    {
-      persone: "secondPersonSingular",
-      verb: "Avoir",
-    },
-    {
-      persone: "thirdPersonSingular",
-      verb: "Finir",
-    },
-  ]);
+  const [questionIndx, setQuestionIndx] = useState(0);
+  const [width, setWidth] = useState();
+  const loadQuestions = async () => {
+    const questions = [];
+    for (let i = 0; i < 10; i++) {
+      questions.push(getQuestion());
+    }
+    setQuestions(questions);
+  };
+  const getQuestion = () => {
+    let question = {
+      verb: "",
+      person: "",
+      rightAnswer: "",
+      options: [],
+    };
+    const verbsKeys = Object.keys(verbos);
+    const maxVerbs = verbsKeys.length;
+    const randIndxVerbs = Math.floor(Math.random() * maxVerbs);
+    question.verb = verbsKeys[randIndxVerbs];
+    const personKeys = Object.keys(verbos[verbsKeys[randIndxVerbs]]);
+    const maxPersons = personKeys.length;
+    const randIndxPersons = Math.floor(Math.random() * maxPersons);
+    question.person = personKeys[randIndxPersons];
+    question.rightAnswer = verbos[question.verb][question.person];
+    const optionsIndx = [];
+    while (optionsIndx.length < 4) {
+      const rand = Math.floor(Math.random() * 4);
+      if (optionsIndx.includes(rand) == false) {
+        optionsIndx.push(rand);
+      }
+    }
+    const options = [];
+    while (options.length < 4) {
+      const rand = Math.floor(Math.random() * 6);
+      if (options.includes(verbos[question.verb][personKeys[rand]]) == false) {
+        options.splice(rand, 0, verbos[question.verb][personKeys[rand]]);
+      }
+    }
+    if (options.includes(question.rightAnswer) == false) {
+      options.splice(Math.floor(Math.random() * 4), 1, question.rightAnswer);
+    }
+    question.options = options;
+    return question;
+  };
+  useEffect(() => {
+    if (width === 0) {
+      if (questionIndx == totalQuestions - 1) {
+        setIsFinished(true);
+      } else {
+        setQuestionIndx(questionIndx + 1);
+        setWidth(100);
+      }
+    }
+    const interval = setInterval(() => {
+      if (isRunning) {
+        setWidth((prevWidth) => {
+          if (prevWidth <= 0) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prevWidth - 1;
+        });
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [width]);
 
-  const [variant, setVariant] = useState(
-    "font-Rammetto px-2 py-1 text-2xl font-extrabold text-pBlue text-center content-center cursor-pointer border-solid border-1 border-pBlue rounded-xl border-b-4 active:border-b-2"
-  );
+  const variant =
+    "font-Rammetto px-2 py-1 text-2xl font-extrabold text-pBlue text-center content-center cursor-pointer border-solid border-1 border-pBlue rounded-xl border-b-4 active:border-b-2";
   const handleAnswer = (e) => {
     const value = e.target.value;
-    const rightAnswer =
-      verbs[questions[currentQuestion].verb][
-        questions[currentQuestion].persone
-      ];
+    const rightAnswer = questions[questionIndx].rightAnswer;
     console.log(
       "Respuesta correcta " + rightAnswer + " Respuesta dada " + value
     );
     if (value == rightAnswer) {
-      //setVariant("w-23 h-23 cursor-pointer bg-black text-white bg-green-500");
       e.target.className =
         "font-Rammetto px-2 py-1 text-2xl font-extrabold text-white bg-pBlue text-center content-center cursor-pointer border-solid border-1 border-pBlue rounded-xl border-b-4 active:border-b-2";
+      setIsRunning(false);
+      setSuccess(success + 1);
+      setTimeout(() => {
+        if (questionIndx == totalQuestions - 1) {
+          setIsFinished(true);
+        } else {
+          setWidth(100);
+          setIsRunning(true);
+          setQuestionIndx(questionIndx + 1);
+        }
+      }, 3000);
     } else {
+      setAttempts((prev) => prev - 1);
       e.target.className =
-        "font-Rammetto px-2 py-1 text-2xl font-extrabold text-white bg-red-500 text-center content-center cursor-pointer border-solid border-1 border-red-500 rounded-xl border-b-4 active:border-b-2";
+        "font-Rammetto px-2 py-1 text-2xl font-extrabold text-white bg-red-500 text-center content-center cursor-pointer border-solid border-1 border-red-500 rounded-xl border-b-4";
+      e.target.disabled = true;
     }
-    setCurrentQuestion(currentQuestion + 1);
   };
-
-  return (
-    <>
-      <div className="w-full">
-        <div className="w-full md:w-3/6 place-self-center grid grid-cols-1 mb-4">
-          <div className="border p-4  text-center text-2xl text-bold rounded-t-xl border-pBlue">
-            <h2 className="text-pBlue">
-              {persons[questions[currentQuestion].persone]}
-            </h2>
-          </div>
-          <div className="border p-4  text-center text-2xl text-bold rounded-b-xl border-pBlue">
-            <h2 className="text-pBlue">{questions[currentQuestion].verb}</h2>
-          </div>
-        </div>
-        <div className="w-full md:w-1/2 place-self-center grid grid-cols-1 gap-2">
-          {question.options.map((option) => {
-            return (
-              <button
-                value={option}
-                key={option}
-                onClick={handleAnswer}
-                className={variant}
-              >
-                {option}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  );
+  if (!isFinished) {
+    return (
+      <>
+        {loading ? (
+          <h1>Cargando preguntas...</h1>
+        ) : (
+          <>
+            <div className="w-full">
+              <div className="w-full md:w-3/6 place-self-center grid grid-cols-1 mb-4">
+                <div className="border p-4  text-center text-2xl text-bold rounded-t-xl border-pBlue">
+                  <h2 className="text-pBlue">
+                    {persons[questions[questionIndx].person]}
+                  </h2>
+                </div>
+                <div className="border p-4  text-center text-2xl text-bold rounded-b-xl border-pBlue">
+                  <h2 className="text-pBlue">{questions[questionIndx].verb}</h2>
+                </div>
+              </div>
+              <div className="w-full md:w-1/2 place-self-center grid grid-cols-1 gap-2">
+                {questions[questionIndx].options.map((option) => {
+                  return (
+                    <button
+                      value={option}
+                      key={option}
+                      onClick={handleAnswer}
+                      className={variant}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  } else return <ResultPanel aciertos={success} />;
 }
