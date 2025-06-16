@@ -12,6 +12,15 @@ export default function QuestionPanel({
   const [loading, setLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
+
+  const variants = {
+    primary:
+      "w-full font-Rammetto h-fit p-4 text-yellow-50  font-mono font-extrabold text-xl text-center text-shadow-lg/30 bg-linear-180 from-yellow-600 to-yellow-800 rounded-bl-xl rounded-tr-xl shadow-xl shadow-amber-900/50  ",
+    hover: "hover:from-yellow-700 hover:to-yellow-900 hover:text-shadow-lg/50",
+    disabled:
+      "w-full font-Rammetto h-fit p-4 text-xl text-center bg-gray-600 border-4 border-dashed  rounded-md border-gray-800",
+  };
+
   useEffect(() => {
     loadQuestions();
     setLoading(false);
@@ -131,13 +140,15 @@ export default function QuestionPanel({
           <>
             <div className="w-full">
               <div className="w-full md:w-3/6 place-self-center grid grid-cols-1 mb-4">
-                <div className="border p-4  text-center text-2xl text-bold rounded-t-xl border-pBlue">
-                  <h2 className="text-pBlue">
+                <div className="border p-4  text-center text-2xl text-bold rounded-t-xl font-mono font-extrabold text-xl text-center text-shadow-lg/30 bg-linear-180 from-yellow-800 to-yellow-600 ">
+                  <h2 className="text-yellow-50">
                     {persons[questions[questionIndx].person]}
                   </h2>
                 </div>
-                <div className="border p-4  text-center text-2xl text-bold rounded-b-xl border-pBlue">
-                  <h2 className="text-pBlue">{questions[questionIndx].verb}</h2>
+                <div className="border p-4  text-center text-2xl text-bold rounded-b-xl font-mono font-extrabold text-xl text-center text-shadow-lg/30 bg-linear-180 from-yellow-600 to-yellow-800">
+                  <h2 className="text-yellow-50">
+                    {questions[questionIndx].verb}
+                  </h2>
                 </div>
               </div>
               <div className="w-full md:w-1/2 place-self-center grid grid-cols-1 gap-2">
@@ -147,7 +158,7 @@ export default function QuestionPanel({
                       value={option}
                       key={option}
                       onClick={handleAnswer}
-                      className={variant}
+                      className={variants.primary + variants.hover}
                     >
                       {option}
                     </button>
