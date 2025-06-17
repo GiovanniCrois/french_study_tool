@@ -7,11 +7,11 @@ export default function QuestionPanel({
   setAttempts,
   setSuccess,
   attempts,
+  setIsFinish,
 }) {
   const [verbos, setVerbos] = useState(verbs);
   const [questions, setQuestions] = useState();
   const [loading, setLoading] = useState(true);
-  const [isFinished, setIsFinished] = useState(false);
 
   const variants = {
     primary:
@@ -90,21 +90,18 @@ export default function QuestionPanel({
       setSuccess((prev) => prev + 1);
       setTimeout(() => {
         if (questionIndx == totalQuestions - 1) {
-          setIsFinished(true);
+          setIsFinish(true);
         } else {
           setQuestionIndx(questionIndx + 1);
         }
       }, 2000);
     } else {
       setAttempts((prev) => prev - 1);
-      if (attempts == 0) {
-        setIsFinished(true);
-      }
       e.target.className = variants.error;
       e.target.disabled = true;
       setTimeout(() => {
         if (questionIndx == totalQuestions - 1) {
-          setIsFinished(true);
+          setIsFinish(true);
         } else {
           setQuestionIndx(questionIndx + 1);
         }
