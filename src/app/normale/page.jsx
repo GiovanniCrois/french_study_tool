@@ -1,15 +1,73 @@
 "use client";
+import { verbs } from "../../../public/data/verbos";
+import HealthBar from "../components/healthBar";
+import LoadingSpinner from "../components/loadingSpinner";
 import QuestionPanel from "../components/questionPanel";
 import ResultPanel from "../components/resultsPanel";
 import { useState, useEffect } from "react";
 export default function () {
-  const [success, setSuccess] = useState(0);
-  const [attempts, setAttempts] = useState(3);
-  const [isFinish, setIsFinish] = useState(false);
-  const attemptsVariants = {
-    primary: "size-15 stroke-red-800 fill-red-600",
-    error: "size-15 stroke-red-800 fill-none",
+  const totalQuestions = 10;
+  const [verbos, setVerbos] = useState(verbs);
+  const [questions, setQuestions] = useState();
+  const [loading, setLoading] = useState(true);
+
+  const loadQuestions = async () => {
+    const questions = [];
+    for (let i = 0; i < totalQuestions; i++) {
+      questions.push(getQuestion());
+    }
+    setQuestions(questions);
   };
+
+  const getQuestion = () => {
+    let question = {
+      verb: "",
+      person: "",
+      rightAnswer: "",
+      options: [],
+    };
+    const verbsKeys = Object.keys(verbos);
+    const maxVerbs = verbsKeys.length;
+    const randIndxVerbs = Math.floor(Math.random() * maxVerbs);
+    question.verb = verbsKeys[randIndxVerbs];
+    const personKeys = Object.keys(verbos[verbsKeys[randIndxVerbs]]);
+    const maxPersons = personKeys.length;
+    const randIndxPersons = Math.floor(Math.random() * maxPersons);
+    question.person = personKeys[randIndxPersons];
+    question.rightAnswer = verbos[question.verb][question.person];
+    const optionsIndx = [];
+    while (optionsIndx.length < 4) {
+      const rand = Math.floor(Math.random() * 4);
+      if (optionsIndx.includes(rand) == false) {
+        optionsIndx.push(rand);
+      }
+    }
+    const options = [];
+    while (options.length < 4) {
+      const rand = Math.floor(Math.random() * 6);
+      if (options.includes(verbos[question.verb][personKeys[rand]]) == false) {
+        options.splice(rand, 0, verbos[question.verb][personKeys[rand]]);
+      }
+    }
+    if (options.includes(question.rightAnswer) == false) {
+      options.splice(Math.floor(Math.random() * 4), 1, question.rightAnswer);
+    }
+    question.options = options;
+    return question;
+  };
+
+  useEffect(() => {
+    loadQuestions();
+    setLoading(false);
+  }, []);
+
+  const totalHealth = 3;
+  const [attempts, setAttempts] = useState(totalHealth);
+
+  const [success, setSuccess] = useState(0);
+
+  const [questionIndx, setQuestionIndx] = useState(0);
+  const [isFinish, setIsFinish] = useState(false);
 
   useEffect(() => {
     if (attempts == 0) {
@@ -27,59 +85,47 @@ export default function () {
   const handleTermination = (data) => {
     setIsFinish(data);
   };
-  return (
-    <>
-      <div className="flex p-2 ">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          className={
-            attempts > 0 ? attemptsVariants.primary : attemptsVariants.error
-          }
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-          />
-        </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          className={
-            attempts > 1 ? attemptsVariants.primary : attemptsVariants.error
-          }
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-          />
-        </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          className={
-            attempts > 2 ? attemptsVariants.primary : attemptsVariants.error
-          }
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-          />
-        </svg>
-      </div>
-      {!isFinish ? (
-        <QuestionPanel
-          setAttempts={handleAttempts}
-          setSuccess={handleSuccess}
-          setIsFinish={handleTermination}
-          totalQuestions={10}
-        />
-      ) : (
-        <ResultPanel aciertos={success} />
-      )}
-    </>
-  );
+
+  const handleAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setSuccess((prev) => prev + 1);
+      setTimeout(() => {
+        if (questionIndx == totalQuestions - 1) {
+          setIsFinish(true);
+        } else {
+          setQuestionIndx(questionIndx + 1);
+        }
+      }, 2000);
+    } else {
+      setAttempts((prev) => prev - 1);
+      setTimeout(() => {
+        if (questionIndx == totalQuestions - 1) {
+          setIsFinish(true);
+        } else {
+          setQuestionIndx(questionIndx + 1);
+        }
+      }, 2000);
+    }
+  };
+  if (loading) return <LoadingSpinner />;
+  else {
+    return (
+      <>
+        {!isFinish ? (
+          <>
+            <HealthBar attempts={attempts} totalHealth={totalHealth} />
+            <QuestionPanel
+              setAttempts={handleAttempts}
+              setSuccess={handleSuccess}
+              setIsFinish={handleTermination}
+              question={questions[questionIndx]}
+              handleAnswer={handleAnswer}
+            />
+          </>
+        ) : (
+          <ResultPanel aciertos={success} />
+        )}
+      </>
+    );
+  }
 }
