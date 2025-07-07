@@ -6,8 +6,8 @@ export default function HealthBar({ attempts, totalHealth }) {
 
   return (
     <div className="flex p-2 ">
-      {healthCounters.map((healthCounter) => {
-        return <HealthCounter variant={healthCounter} />;
+      {healthCounters.map((healthCounter, indx) => {
+        return <HealthCounter key={indx} variant={healthCounter} />;
       })}
     </div>
   );
